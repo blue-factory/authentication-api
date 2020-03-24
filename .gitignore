@@ -1,0 +1,4 @@
+.env
+bin/users-api
+bin/wait-db
+bin/goose
