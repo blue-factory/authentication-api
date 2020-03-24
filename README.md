@@ -1,6 +1,6 @@
 # Auth-API
 
-Microservice implemented in Typecript that allows authenticating access to the backend through a JWT token. On the other hand, it manages user signup and login.
+Microservice implemented in Golang that allows authenticating access to the backend through a JWT token. On the other hand, it manages user signup and login.
 
 ## Table
 
