@@ -9,10 +9,17 @@ import (
 )
 
 func main() {
+	host := os.Getenv("HOST")
+	if host == "" {
+		log.Fatal("Env variable HOST must be defined")
+	}
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("Env variable PORT must be defined")
 	}
+
+	addr := fmt.Sprintf("%s:%s", host, port)
 
 	postgresDSN := os.Getenv("POSTGRES_DSN")
 	if postgresDSN == "" {
@@ -36,5 +43,5 @@ func main() {
 		log.Fatal("JWT_SECRET env must be defined")
 	}
 
-	auth.Run(port, postgresDSN, usersAddr)
+	auth.Run(addr, postgresDSN, usersAddr)
 }
