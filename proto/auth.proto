@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package proto;
+
+import "github.com/microapis/users-api/proto/users.proto";
+
+// ------------------- Base -------------------
+
+message AuthError {
+  int32 code = 1;
+  string message = 2;
+}
+
+message AuthMeta {}
+
+service AuthService {
+  rpc GetByToken(AuthGetByTokenRequest) returns (AuthGetByTokenResponse) {}
+  rpc Login(AuthLoginRequest) returns (AuthLoginResponse) {}
+  rpc Signup(AuthSignupRequest) returns (AuthSignupResponse) {}
+  rpc VerifyToken(AuthVerifyTokenRequest) returns (AuthVerifyTokenResponse) {}
+  rpc Logout(AuthLogoutRequest) returns (AuthLogoutResponse) {}
+  rpc ForgotPassword(AuthForgotPasswordRequest) returns (AuthForgotPasswordResponse) {}
+  rpc RecoverPassword(AuthRecoverPasswordRequest) returns (AuthRecoverPasswordResponse) {}
+}
+
+message Auth {
+	string id = 1;
+
+	string user_id = 2;
+	string token = 3;
+	bool blacklist = 4;
+  string kind = 5;
+  
+	int64 created_at = 6;
+	int64 updated_at = 7;
+}
+
+message AuthMetaToken {
+  string token = 1;
+}
+
+message AuthToken {
+  int64 iat = 1;
+  int64 exp = 2;
+  string user_id = 3;
+}
+
+message AuthGetByTokenRequest {
+  string Token = 1;
+}
+message AuthGetByTokenResponse {
+  Auth data = 1;
+  AuthMeta meta = 2;
+  AuthError error = 3;
+}
+
+message AuthLoginRequest {
+  string email = 1;
+  string password = 2;
+}
+message AuthLoginResponse {
+  User data = 1;
+  AuthMetaToken meta = 2;
+  AuthError error = 3;
+}
+
+message AuthSignupRequest {
+  User user = 1;
+}
+message AuthSignupResponse {
+  User data = 1;
+  AuthMetaToken meta = 2;
+  AuthError error = 3;
+}
+
+message AuthVerifyTokenRequest {
+  string token = 1;
+  string kind = 2;
+}
+message AuthVerifyTokenResponse {
+  AuthToken data = 1;
+  AuthError error = 2;
+}
+
+message AuthLogoutRequest {
+  string token = 1;
+}
+message AuthLogoutResponse {
+  AuthError error = 1;
+}
+
+message AuthForgotPasswordRequest {
+  string email = 1;
+}
+message AuthForgotPasswordResponse {
+  AuthMetaToken data = 1;
+  AuthMeta meta = 2;
+  AuthError error = 3;
+}
+
+message AuthRecoverPasswordRequest {
+  string new_password = 1;
+  string token = 2;
+}
+message AuthRecoverPasswordResponse {
+  AuthError error = 1;
+}
