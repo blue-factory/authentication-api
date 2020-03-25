@@ -60,6 +60,8 @@ service AuthService {
 
 `POSTGRES_DSN`: define postgres database connection DSN.
 
+`JWT_SECRET`: define secret used for generate tokens.
+
 ## Commands (Development)
 
 `make build`: build restaurants service for osx.
