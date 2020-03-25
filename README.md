@@ -24,6 +24,23 @@ Triggers:
 ## GRPC Service
 
 ```go
+message Auth {
+	string id = 1;
+	string user_id = 2;
+	string token = 3;
+	bool blacklist = 4;
+  string kind = 5;
+
+	int64 created_at = 6;
+	int64 updated_at = 7;
+}
+
+message AuthToken {
+  int64 iat = 1;
+  int64 exp = 2;
+  string user_id = 3;
+}
+
 service AuthService {
   rpc GetByToken(AuthGetByTokenRequest) returns (AuthGetByTokenResponse) {}
   rpc Login(AuthLoginRequest) returns (AuthLoginResponse) {}
@@ -37,9 +54,9 @@ service AuthService {
 
 ## Environments Values
 
-`PORT`: define users service port.
+`PORT`: define auth service port.
 
-`HOST`: define users service host.
+`HOST`: define auth service host.
 
 `POSTGRES_DSN`: define postgres database connection DSN.
 
@@ -51,6 +68,10 @@ service AuthService {
 
 `make docker .`: build docker.
 
-`docker run -it -p 5030:5030 tenpo-auth-api`: run docker.
+`make compose`: start docker-docker.
 
-`PORT=<port> JWT_SECRET=<jwt_secret> USERS_HOST=<users_host> USERS_PORT=<users_port> make r`: run tenpo auth service.
+`make stop`: stop docker-docker.
+
+`make run`: run auth service.
+
+`docker run -it -p 5010:5010 auth-api`: run docker.
