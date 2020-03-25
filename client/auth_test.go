@@ -1,7 +1,8 @@
-package auth
+package client
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"testing"
 
@@ -24,12 +25,6 @@ func before() (string, string, error) {
 		return "", "", err
 	}
 
-	postgresDSN := os.Getenv("POSTGRES_DSN")
-	if postgresDSN == "" {
-		err := fmt.Errorf(fmt.Sprintf("Create: missing env variable POSTGRES_DSN, failed with %s value", postgresDSN))
-		return "", "", err
-	}
-
 	return host, port, nil
 }
 
@@ -40,7 +35,10 @@ func TestGetByToken(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	randomUUID := uuid.New()
 
@@ -110,7 +108,10 @@ func TestSignup(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	// Test sign up user with nil value
 	_, err = as.Signup(nil)
@@ -242,7 +243,10 @@ func TestLogin(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	randomUUID := uuid.New()
 
@@ -323,7 +327,10 @@ func TestVerifyToken(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	randomUUID := uuid.New()
 
@@ -371,7 +378,10 @@ func TestLogout(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	randomUUID := uuid.New()
 
@@ -441,7 +451,10 @@ func TestForgotPassword(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	randomUUID := uuid.New()
 
@@ -498,7 +511,10 @@ func TestRecoverPasssword(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as := authClient.New(host + ":" + port)
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	randomUUID := uuid.New()
 

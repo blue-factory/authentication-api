@@ -18,6 +18,7 @@ REGISTRY_URL=$(DOCKER_USER)
 HOST=localhost
 PORT=5010
 POSTGRES_DSN=postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable
+
 JWT_SECRET=mega-secret
 USERS_HOST=localhost
 USERS_PORT=5020
@@ -28,7 +29,13 @@ clean c:
 
 run r:
 	@echo "[running] Running service..."
-	@HOST=$(HOST) PORT=$(PORT) POSTGRES_DSN=$(POSTGRES_DSN) JWT_SECRET=$(JWT_SECRET) USERS_HOST=$(USERS_HOST) USERS_PORT=$(USERS_PORT) go run cmd/$(NAME)/main.go
+	@HOST=$(HOST) \
+	 PORT=$(PORT) \
+	 POSTGRES_DSN=$(POSTGRES_DSN) \
+	 JWT_SECRET=$(JWT_SECRET) \
+	 USERS_HOST=$(USERS_HOST) \
+	 USERS_PORT=$(USERS_PORT) \
+	 go run cmd/$(NAME)/main.go
 
 build b: proto
 	@echo "[build] Building service..."
@@ -78,6 +85,12 @@ proto pro: clean-proto
 
 test t:
 	@echo "[test] Testing $(NAME)..."
-	@HOST=$(HOST) PORT=$(PORT) POSTGRES_DSN=$(POSTGRES_DSN) JWT_SECRET=$(JWT_SECRET) USERS_HOST=$(USERS_HOST) USERS_PORT=$(USERS_PORT) go test -count=1 -v ./client/$(NAME)_test.go
+	@HOST=$(HOST) \
+	 PORT=$(PORT) \
+	 POSTGRES_DSN=$(POSTGRES_DSN) \
+	 JWT_SECRET=$(JWT_SECRET) \
+	 USERS_HOST=$(USERS_HOST) \
+	 USERS_PORT=$(USERS_PORT) \
+	 go test -count=1 -v ./client/$(NAME)_test.go
 
 .PHONY: clean c run r build b linux l add-migration am migrations m docker d docker-login dl push p compose co stop s clean-proto cp proto pro test t

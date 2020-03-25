@@ -1,9 +1,8 @@
-package auth
+package client
 
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/microapis/auth-api"
 	pb "github.com/microapis/auth-api/proto"
@@ -17,17 +16,17 @@ type Client struct {
 }
 
 // New ...
-func New(address string) *Client {
+func New(address string) (*Client, error) {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatal("couldn't connect to auth server", err)
+		return nil, err
 	}
 
 	c := pb.NewAuthServiceClient(conn)
 
 	return &Client{
 		Client: c,
-	}
+	}, nil
 }
 
 // GetByToken ...

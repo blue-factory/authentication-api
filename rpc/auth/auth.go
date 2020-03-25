@@ -11,6 +11,7 @@ import (
 	pb "github.com/microapis/auth-api/proto"
 	"github.com/microapis/auth-api/service"
 
+	e "github.com/microapis/email-api/client"
 	u "github.com/microapis/users-api/client"
 )
 
@@ -22,9 +23,9 @@ type Service struct {
 }
 
 // New ...
-func New(store database.Store, uc *u.Client) *Service {
+func New(store database.Store, uc *u.Client, ec *e.Client) *Service {
 	return &Service{
-		AuthSvc: service.NewAuth(store, uc),
+		AuthSvc: service.NewAuth(store, uc, ec),
 	}
 }
 

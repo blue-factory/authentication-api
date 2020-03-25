@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -13,14 +14,18 @@ import (
 	"github.com/microapis/users-api"
 	uc "github.com/microapis/users-api/client"
 
+	"github.com/microapis/email-api"
+	ec "github.com/microapis/email-api/client"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
 // NewAuth ...
-func NewAuth(store database.Store, usersClient *uc.Client) *Auth {
+func NewAuth(store database.Store, usersClient *uc.Client, emailClient *ec.Client) *Auth {
 	return &Auth{
 		Store:       store,
 		UsersClient: usersClient,
+		EmailClient: emailClient,
 	}
 }
 
@@ -28,6 +33,7 @@ func NewAuth(store database.Store, usersClient *uc.Client) *Auth {
 type Auth struct {
 	Store       database.Store
 	UsersClient *uc.Client
+	EmailClient *ec.Client
 }
 
 // GetByToken ...
@@ -187,6 +193,21 @@ func (as *Auth) Signup(u *users.User) (*auth.Response, error) {
 		Meta: mt,
 	}
 
+	// send email with token and url
+	id, err := as.EmailClient.Send(&email.Message{
+		From:     "no-reply@pensionatebien.cl",
+		FromName: user.Name,
+		To:       []string{user.Email},
+		Subject:  "Bienvenido a pensionatebien.cl",
+		Text:     fmt.Sprintf("Hola %s, gracias por unirte a pensionatebien.cl", user.Name),
+		Provider: "sendgrid",
+	}, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Println("Send email for Signup, email=%s id=%s", user.Email, id)
+
 	return res, nil
 }
 
@@ -315,14 +336,14 @@ func (as *Auth) Logout(token string) error {
 }
 
 // ForgotPassword ...
-func (as *Auth) ForgotPassword(email string) (string, error) {
+func (as *Auth) ForgotPassword(e string) (string, error) {
 	// validate email param
-	if email == "" {
+	if e == "" {
 		return "", errors.New("invalid email")
 	}
 
 	// check if email exist on users service
-	user, err := as.UsersClient.GetByEmail(email)
+	user, err := as.UsersClient.GetByEmail(e)
 	if err != nil {
 		return "", err
 	}
@@ -363,7 +384,20 @@ func (as *Auth) ForgotPassword(email string) (string, error) {
 		return "", err
 	}
 
-	// TODO(ca): send email with token and url
+	// send email with token and url
+	id, err := as.EmailClient.Send(&email.Message{
+		From:     "no-reply@pensionatebien.cl",
+		FromName: user.Name,
+		To:       []string{user.Email},
+		Subject:  "Cambia tu contraseña en pensionatebien.cl",
+		Text:     tokenStr,
+		Provider: "sendgrid",
+	}, 0)
+	if err != nil {
+		return "", err
+	}
+
+	log.Println("Send email for Forgot-password, email=%s id=%s", user.Email, id)
 
 	return tokenStr, nil
 }
