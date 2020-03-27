@@ -1,4 +1,4 @@
-package auth
+package rpc
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	pb "github.com/microapis/auth-api/proto"
 	"github.com/microapis/auth-api/service"
 
-	e "github.com/microapis/email-api/client"
+	"github.com/microapis/email-api"
 	u "github.com/microapis/users-api/client"
 )
 
@@ -23,9 +23,9 @@ type Service struct {
 }
 
 // New ...
-func New(store database.Store, uc *u.Client, ec *e.Client) *Service {
+func New(store database.Store, uc *u.Client, mt *email.MailingTemplates) *Service {
 	return &Service{
-		AuthSvc: service.NewAuth(store, uc, ec),
+		AuthSvc: service.NewAuth(store, uc, mt),
 	}
 }
 
@@ -159,7 +159,8 @@ func (s *Service) Signup(ctx context.Context, gr *pb.AuthSignupRequest) (*pb.Aut
 	r := &pb.AuthSignupResponse{
 		Data: res.Data.ToProto(),
 		Meta: &pb.AuthMetaToken{
-			Token: res.Meta.Token,
+			Token:             res.Meta.Token,
+			VerificationToken: res.Meta.VerificationToken,
 		},
 	}
 
@@ -200,6 +201,39 @@ func (s *Service) VerifyToken(ctx context.Context, gr *pb.AuthVerifyTokenRequest
 	}
 
 	fmt.Println(fmt.Sprintf("[gRPC][Auth][VerifyToken][Response] %v", res))
+	return res, nil
+}
+
+// VerifyEmail ...
+func (s *Service) VerifyEmail(ctx context.Context, gr *pb.AuthVerifyEmailRequest) (*pb.AuthVerifyEmailResponse, error) {
+	token := gr.GetToken()
+	fmt.Println(fmt.Sprintf("[gRPC][Auth][VerifyEmail][Request] token = %v", token))
+
+	// get and validate token and kind params
+	if token == "" {
+		fmt.Println(fmt.Sprintf("[gRPC][Auth][VerifyEmail][Error] %v", "invalid token"))
+		return &pb.AuthVerifyEmailResponse{
+			Error: &pb.AuthError{
+				Code:    401,
+				Message: "invalid token or kind",
+			},
+		}, nil
+	}
+
+	err := s.AuthSvc.VerifyEmail(token)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("[gRPC][Auth][VerifyEmail][Error] %v", err))
+		return &pb.AuthVerifyEmailResponse{
+			Error: &pb.AuthError{
+				Code:    401,
+				Message: err.Error(),
+			},
+		}, nil
+	}
+
+	res := &pb.AuthVerifyEmailResponse{}
+
+	fmt.Println(fmt.Sprintf("[gRPC][Auth][VerifyEmail][Response] %v", res))
 	return res, nil
 }
 
