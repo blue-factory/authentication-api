@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -15,25 +14,24 @@ import (
 	uc "github.com/microapis/users-api/client"
 
 	"github.com/microapis/email-api"
-	ec "github.com/microapis/email-api/client"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
 // NewAuth ...
-func NewAuth(store database.Store, usersClient *uc.Client, emailClient *ec.Client) *Auth {
+func NewAuth(store database.Store, usersClient *uc.Client, mt *email.MailingTemplates) *Auth {
 	return &Auth{
-		Store:       store,
-		UsersClient: usersClient,
-		EmailClient: emailClient,
+		Store:            store,
+		UsersClient:      usersClient,
+		MailingTemplates: mt,
 	}
 }
 
 // Auth ...
 type Auth struct {
-	Store       database.Store
-	UsersClient *uc.Client
-	EmailClient *ec.Client
+	Store            database.Store
+	UsersClient      *uc.Client
+	MailingTemplates *email.MailingTemplates
 }
 
 // GetByToken ...
@@ -161,14 +159,14 @@ func (as *Auth) Signup(u *users.User) (*auth.Response, error) {
 		log.Fatal("env variable JWT_SECRET must be defined")
 	}
 
-	// generate jwt token
+	// generate login jwt token
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), t)
 	tokenStr, err := token.SignedString([]byte(jwtSecret))
 	if err != nil {
 		return nil, err
 	}
 
-	// create auth definition
+	// create signup auth definition
 	a := &auth.Auth{
 		Token:     tokenStr,
 		Kind:      auth.KindUser,
@@ -182,9 +180,40 @@ func (as *Auth) Signup(u *users.User) (*auth.Response, error) {
 		return nil, err
 	}
 
+	// create verify token definition
+	vt := auth.Token{
+		UserID: user.ID,
+		StandardClaims: &jwt.StandardClaims{
+			IssuedAt:  time.Now().Unix(),
+			ExpiresAt: time.Now().Add(8760 * time.Hour).UnixNano(), // one year of expiration
+		},
+	}
+
+	// generate verify jwt token
+	verificationToken := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), vt)
+	verificationTokenStr, err := verificationToken.SignedString([]byte(jwtSecret))
+	if err != nil {
+		return nil, err
+	}
+
+	// create verification auth definition
+	va := &auth.Auth{
+		Token:     verificationTokenStr,
+		Kind:      auth.KindVerifyPassword,
+		Blacklist: false,
+		UserID:    user.ID,
+	}
+
+	// save auth store
+	err = as.Store.Create(va)
+	if err != nil {
+		return nil, err
+	}
+
 	// prepare metatoken
 	mt := &auth.MetaToken{
-		Token: tokenStr,
+		Token:             tokenStr,
+		VerificationToken: verificationTokenStr,
 	}
 
 	// prepare response
@@ -193,20 +222,21 @@ func (as *Auth) Signup(u *users.User) (*auth.Response, error) {
 		Meta: mt,
 	}
 
-	// send email with token and url
-	id, err := as.EmailClient.Send(&email.Message{
-		From:     "no-reply@pensionatebien.cl",
-		FromName: user.Name,
-		To:       []string{user.Email},
-		Subject:  "Bienvenido a pensionatebien.cl",
-		Text:     fmt.Sprintf("Hola %s, gracias por unirte a pensionatebien.cl", user.Name),
-		Provider: "sendgrid",
-	}, 0)
-	if err != nil {
-		return nil, err
+	// send signup email with token and url
+	if as.MailingTemplates.Signup != nil {
+		err = as.MailingTemplates.Signup(user)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	log.Println("Send email for Signup, email=%s id=%s", user.Email, id)
+	// send email verification with token and url
+	if as.MailingTemplates.VerifyEmail != nil {
+		err = as.MailingTemplates.VerifyEmail(user, verificationTokenStr)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return res, nil
 }
@@ -270,6 +300,49 @@ func (as *Auth) VerifyToken(token string, kind string) (*auth.Token, error) {
 	}
 
 	return decode, nil
+}
+
+// VerifyEmail ...
+func (as *Auth) VerifyEmail(token string) error {
+	// validate token param
+	if token == "" {
+		return errors.New("invalid token")
+	}
+
+	// get Auth by token from store
+	a, err := as.Store.Get(&auth.Query{
+		Token: token,
+	})
+	if err != nil {
+		return err
+	}
+
+	// validate auth kind
+	if a.Kind != auth.KindVerifyPassword {
+		return errors.New("invalid kind")
+	}
+
+	// check if token is blacklisted
+	if a.Blacklist {
+		return errors.New("token is blacklisted")
+	}
+
+	// update verified to true
+	_, err = as.UsersClient.Update(a.UserID, &users.User{
+		Verified: true,
+	})
+	if err != nil {
+		return err
+	}
+
+	// update blacklist to true
+	a.Blacklist = true
+	err = as.Store.Update(a)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Logout ...
@@ -385,19 +458,12 @@ func (as *Auth) ForgotPassword(e string) (string, error) {
 	}
 
 	// send email with token and url
-	id, err := as.EmailClient.Send(&email.Message{
-		From:     "no-reply@pensionatebien.cl",
-		FromName: user.Name,
-		To:       []string{user.Email},
-		Subject:  "Cambia tu contraseña en pensionatebien.cl",
-		Text:     tokenStr,
-		Provider: "sendgrid",
-	}, 0)
-	if err != nil {
-		return "", err
+	if as.MailingTemplates.ForgotPassword != nil {
+		err = as.MailingTemplates.ForgotPassword(user, tokenStr)
+		if err != nil {
+			return "", err
+		}
 	}
-
-	log.Println("Send email for Forgot-password, email=%s id=%s", user.Email, id)
 
 	return tokenStr, nil
 }
@@ -461,7 +527,7 @@ func (as *Auth) RecoverPassword(newPassword, token string) error {
 	}
 
 	// update user password
-	_, err = as.UsersClient.Update(decode.UserID, &users.User{
+	user, err := as.UsersClient.Update(decode.UserID, &users.User{
 		Password: newPassword,
 	})
 	if err != nil {
@@ -473,6 +539,14 @@ func (as *Auth) RecoverPassword(newPassword, token string) error {
 	err = as.Store.Update(a)
 	if err != nil {
 		return err
+	}
+
+	// send password changed email
+	if as.MailingTemplates.PasswordChanged != nil {
+		err = as.MailingTemplates.PasswordChanged(user)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
