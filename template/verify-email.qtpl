@@ -1,0 +1,19 @@
+{% code
+	// VerifyEmailValues ...
+	type VerifyEmailValues struct {
+		Name      string
+		TokenURL   string
+		Company    string
+	}
+%}
+
+{% func VerifyEmail(t VerifyEmailValues) %}
+Hi {%s t.Name %},
+
+To complete your sign up, please verify your email:
+
+{%s t.TokenURL %}
+
+Thank you, 
+{%s t.Company %} Team
+{% endfunc %}

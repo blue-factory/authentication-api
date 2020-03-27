@@ -1,0 +1,16 @@
+{% code
+	// SignupValues ...
+	type SignupValues struct {
+		Name      string
+		Company      string
+	}
+%}
+
+{% func Signup(t SignupValues) %}
+Welcome to {%s t.Company %} {%s t.Name %}!
+
+Thank you very much for registering.
+
+Best regards,
+{%s t.Company %} Team.
+{% endfunc %}
