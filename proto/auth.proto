@@ -18,6 +18,7 @@ service AuthService {
   rpc Login(AuthLoginRequest) returns (AuthLoginResponse) {}
   rpc Signup(AuthSignupRequest) returns (AuthSignupResponse) {}
   rpc VerifyToken(AuthVerifyTokenRequest) returns (AuthVerifyTokenResponse) {}
+  rpc VerifyEmail(AuthVerifyEmailRequest) returns (AuthVerifyEmailResponse) {}
   rpc Logout(AuthLogoutRequest) returns (AuthLogoutResponse) {}
   rpc ForgotPassword(AuthForgotPasswordRequest) returns (AuthForgotPasswordResponse) {}
   rpc RecoverPassword(AuthRecoverPasswordRequest) returns (AuthRecoverPasswordResponse) {}
@@ -37,6 +38,7 @@ message Auth {
 
 message AuthMetaToken {
   string token = 1;
+  string verification_token = 2;
 }
 
 message AuthToken {
@@ -80,6 +82,13 @@ message AuthVerifyTokenRequest {
 message AuthVerifyTokenResponse {
   AuthToken data = 1;
   AuthError error = 2;
+}
+
+message AuthVerifyEmailRequest {
+  string token = 1;
+}
+message AuthVerifyEmailResponse {
+  AuthError error = 1;
 }
 
 message AuthLogoutRequest {
