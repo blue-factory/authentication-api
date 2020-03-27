@@ -8,9 +8,9 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/microapis/auth-api/database"
 	pb "github.com/microapis/auth-api/proto"
-	authSvc "github.com/microapis/auth-api/rpc/auth"
+	"github.com/microapis/auth-api/rpc"
 
-	e "github.com/microapis/email-api/client"
+	"github.com/microapis/email-api"
 	u "github.com/microapis/users-api/client"
 
 	"google.golang.org/grpc"
@@ -18,7 +18,7 @@ import (
 )
 
 // Run ...
-func Run(address string, postgresDSN string, usersAddress string, emailAddress string) {
+func Run(address string, postgresDSN string, usersAddress string, mailingTmpl *email.MailingTemplates) {
 	pgSvc, err := database.NewPostgres(postgresDSN)
 	if err != nil {
 		log.Fatalf("Failed connect to postgres: %v", err)
@@ -29,13 +29,8 @@ func Run(address string, postgresDSN string, usersAddress string, emailAddress s
 		log.Fatalf(err.Error())
 	}
 
-	ec, err := e.New(emailAddress)
-	if err != nil {
-		log.Fatalf(err.Error())
-	}
-
 	srv := grpc.NewServer()
-	svc := authSvc.New(pgSvc, uc, ec)
+	svc := rpc.New(pgSvc, uc, mailingTmpl)
 
 	pb.RegisterAuthServiceServer(srv, svc)
 	reflection.Register(srv)
