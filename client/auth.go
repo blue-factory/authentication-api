@@ -118,13 +118,15 @@ func (c *Client) Signup(u *users.User) (*auth.Response, error) {
 	}
 
 	data := gr.GetData()
-	token := gr.GetMeta().GetToken()
+	t := gr.GetMeta().GetToken()
+	vt := gr.GetMeta().GetVerificationToken()
 
 	uu := &users.User{}
 	r := &auth.Response{
 		Data: uu.FromProto(data),
 		Meta: &auth.MetaToken{
-			Token: token,
+			Token:             t,
+			VerificationToken: vt,
 		},
 	}
 
@@ -224,6 +226,27 @@ func (c *Client) RecoverPassword(newPassword string, token string) error {
 	gr, err := c.Client.RecoverPassword(context.Background(), &pb.AuthRecoverPasswordRequest{
 		NewPassword: newPassword,
 		Token:       token,
+	})
+	if err != nil {
+		return err
+	}
+
+	msg := gr.GetError().GetMessage()
+	if msg != "" {
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+// VerifyEmail ...
+func (c *Client) VerifyEmail(token string) error {
+	if token == "" {
+		return errors.New("invalid token")
+	}
+
+	gr, err := c.Client.VerifyEmail(context.Background(), &pb.AuthVerifyEmailRequest{
+		Token: token,
 	})
 	if err != nil {
 		return err

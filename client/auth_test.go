@@ -210,9 +210,21 @@ func TestSignup(t *testing.T) {
 		return
 	}
 
+	expectedBool := a.Data.Verified
+	if user.Verified != expectedBool {
+		t.Errorf("TestSignup: a.Data.Verified(\"\") failed, expected %v, got %v", expectedBool, user.Name)
+		return
+	}
+
 	expected = a.Meta.Token
 	if expected == "" {
 		t.Errorf("TestSignup: a.Meta.Token(\"\") failed, expected %v", expected)
+		return
+	}
+
+	expected = a.Meta.VerificationToken
+	if expected == "" {
+		t.Errorf("TestSignup: a.Meta.VerificationToken(\"\") failed, expected %v", expected)
 		return
 	}
 
@@ -223,7 +235,7 @@ func TestSignup(t *testing.T) {
 		return
 	}
 
-	expectedBool := aa.Blacklist
+	expectedBool = aa.Blacklist
 	if expectedBool == true {
 		t.Errorf("TestSignup: a.Blacklist(\"\") failed, expected %v, got %v", expectedBool, false)
 		return
@@ -294,28 +306,40 @@ func TestLogin(t *testing.T) {
 		return
 	}
 
+	expectedBool := a.Data.Verified
+	if user.Verified != expectedBool {
+		t.Errorf("TestLogin: a.Data.Verified(\"\") failed, expected %v, got %v", expectedBool, user.Name)
+		return
+	}
+
 	expected = a.Meta.Token
 	if expected == "" {
 		t.Errorf("TestLogin: a.Meta.Token(\"\") failed, expected %v", expected)
 		return
 	}
 
-	// Verify if blacklist is false
-	aa, err := as.GetByToken(a.Meta.Token)
-	if err != nil {
-		t.Errorf("TestGetByToken: as.Signup(user) failed: %s", err.Error())
+	expected = a.Meta.VerificationToken
+	if expected != "" {
+		t.Errorf("TestLogin: a.Meta.VerificationToken(\"\") failed, expected %v", expected)
 		return
 	}
 
-	expectedBool := aa.Blacklist
+	// Verify if blacklist is false
+	aa, err := as.GetByToken(a.Meta.Token)
+	if err != nil {
+		t.Errorf("TestLogin: as.GetByToken(user) failed: %s", err.Error())
+		return
+	}
+
+	expectedBool = aa.Blacklist
 	if expectedBool == true {
-		t.Errorf("TestSignup: a.Blacklist(\"\") failed, expected %v, got %v", expectedBool, false)
+		t.Errorf("TestLogin: a.Blacklist(\"\") failed, expected %v, got %v", expectedBool, false)
 		return
 	}
 
 	expected = aa.Kind
 	if expected != auth.KindUser {
-		t.Errorf("TestSignup: a.Kind(\"\") failed, expected %v, got %v", expected, auth.KindUser)
+		t.Errorf("TestLogin: a.Kind(\"\") failed, expected %v, got %v", expected, auth.KindUser)
 		return
 	}
 }
@@ -367,6 +391,123 @@ func TestVerifyToken(t *testing.T) {
 	expectedInt64 = tt.ExpiresAt
 	if expectedInt64 == 0 {
 		t.Errorf("TestVerifyToken: Token.ExpiresAt(\"\") failed, expected %v", expectedInt64)
+		return
+	}
+}
+
+// TestVerifyEmail ...
+func TestVerifyEmail(t *testing.T) {
+	host, port, err := before()
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	as, err := authClient.New(host + ":" + port)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	randomUUID := uuid.New()
+
+	// After: signup user
+	user := &users.User{
+		Email:    "fake_email_" + randomUUID.String(),
+		Password: "fake_password",
+		Name:     "fake_name",
+	}
+
+	newUser, err := as.Signup(user)
+	if err != nil {
+		t.Errorf("TestVerifyEmail: as.Signup(user) failed: %s", err.Error())
+		return
+	}
+
+	vt := newUser.Meta.VerificationToken
+
+	// Test valid token
+	a, err := as.GetByToken(vt)
+	if err != nil {
+		t.Errorf("TestVerifyEmail: as.Signup(user) failed: %s", err.Error())
+		return
+	}
+
+	expected := a.ID
+	if expected == "" {
+		t.Errorf("TestVerifyEmail: a.ID(\"\") failed, expected %v, got %v", expected, user.ID)
+		return
+	}
+
+	expected = a.UserID
+	if expected == user.ID {
+		t.Errorf("TestVerifyEmail: a.UserID(\"\") failed, expected %v, got %v", expected, user.ID)
+		return
+	}
+
+	expectedBool := a.Blacklist
+	if expectedBool == true {
+		t.Errorf("TestVerifyEmail: a.Blacklist(\"\") failed, expected %v, got %v", expected, false)
+		return
+	}
+
+	expected = a.Kind
+	if expected != auth.KindVerifyPassword {
+		t.Errorf("TestVerifyEmail: a.Kind(\"\") failed, expected %v, got %v", expected, auth.KindVerifyPassword)
+		return
+	}
+
+	// Verify email
+	err = as.VerifyEmail(vt)
+	if err != nil {
+		t.Errorf("TestVerifyEmail: as.VerifyEmail(user) failed: %s", err.Error())
+		return
+	}
+
+	// Login user
+	aa, err := as.Login(user.Email, user.Password)
+	if err != nil {
+		t.Errorf("TestVerifyEmail: as.Login(user) failed: %s", err.Error())
+		return
+	}
+
+	expected = aa.Data.ID
+	if expected == "" {
+		t.Errorf("TestVerifyEmail: aa.Data.ID(\"\") failed, expected %v, got %v", expected, user.ID)
+		return
+	}
+
+	expected = aa.Data.Email
+	if user.Email != expected {
+		t.Errorf("TestVerifyEmail: aa.Data.Email(\"\") failed, expected %v, got %v", expected, user.Email)
+		return
+	}
+
+	expected = aa.Data.Password
+	if user.Password == expected {
+		t.Errorf("TestVerifyEmail: aa.Data.Password(\"\") failed, expected %v, got %v", expected, user.Password)
+		return
+	}
+
+	expected = aa.Data.Name
+	if user.Name != expected {
+		t.Errorf("TestVerifyEmail: aa.Data.Name(\"\") failed, expected %v, got %v", expected, user.Name)
+		return
+	}
+
+	expectedBool = aa.Data.Verified
+	if true != expectedBool {
+		t.Errorf("TestVerifyEmail: aa.Data.Verified(\"\") failed, expected %v, got %v", expectedBool, true)
+		return
+	}
+
+	expected = aa.Meta.Token
+	if expected == "" {
+		t.Errorf("TestVerifyEmail: aa.Meta.Token(\"\") failed, expected %v", expected)
+		return
+	}
+
+	expected = aa.Meta.VerificationToken
+	if expected != "" {
+		t.Errorf("TestVerifyEmail: aa.Meta.VerificationToken(\"\") failed, expected %v", expected)
 		return
 	}
 }
