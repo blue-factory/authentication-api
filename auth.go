@@ -13,6 +13,8 @@ const (
 	KindUser = "user"
 	// KindForgotPassword ...
 	KindForgotPassword = "forgot-password"
+	// KindVerifyPassword ...
+	KindVerifyPassword = "verify-password"
 )
 
 // Token ...
@@ -93,7 +95,8 @@ type Response struct {
 
 // MetaToken ...
 type MetaToken struct {
-	Token string `json:"token"`
+	Token             string `json:"token"`
+	VerificationToken string `json:"verification_token,omitempty"`
 }
 
 // Service ...
@@ -102,6 +105,7 @@ type Service interface {
 	Login(email, password string) (*Response, error)
 	Signup(user *users.User) (*Response, error)
 	VerifyToken(token string, kind string) (*Token, error)
+	VerifyEmail(token string) error
 	Logout(token string) error
 	ForgotPassword(email string) (string, error)
 	RecoverPassword(newPassword, token string) error
