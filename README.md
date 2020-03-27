@@ -29,7 +29,7 @@ message Auth {
 	string user_id = 2;
 	string token = 3;
 	bool blacklist = 4;
-  string kind = 5;
+  	string kind = 5;
 
 	int64 created_at = 6;
 	int64 updated_at = 7;
