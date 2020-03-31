@@ -1,7 +1,10 @@
 package http
 
 import (
+	h "net/http"
+
 	"github.com/gorilla/mux"
+
 	ac "github.com/microapis/auth-api/client"
 )
 
@@ -16,9 +19,8 @@ type handlerContext struct {
 	AuthClient *ac.Client
 }
 
-// New ...
-func New(ac *ac.Client) *mux.Router {
-	r := mux.NewRouter()
+// Routes ...
+func Routes(r *mux.Router, ac *ac.Client) {
 	s := r.PathPrefix("/api/v1/auth").Subrouter()
 
 	// define context
@@ -26,29 +28,21 @@ func New(ac *ac.Client) *mux.Router {
 		AuthClient: ac,
 	}
 
-	// GET /api/v1/auth/token/:id
-	s.HandleFunc("/token/{id}", GetByToken(ctx)).Methods("GET")
-
 	// POST /api/v1/auth/login
-	s.HandleFunc("/login", Login(ctx)).Methods("POST")
+	s.HandleFunc("/login", login(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
 	// POST /api/v1/auth
-	s.HandleFunc("/signup", Signup(ctx)).Methods("POST")
+	s.HandleFunc("/signup", signup(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
 	// POST /api/v1/verify-token
-	s.HandleFunc("/verify-token", VerifyToken(ctx)).Methods("POST")
-
-	// POST /api/v1/auth/verify-email
-	s.HandleFunc("/verify-email", VerifyEmail(ctx)).Methods("POST")
+	s.HandleFunc("/verify-token", verifyToken(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
 	// POST /api/v1/auth/logout
-	s.HandleFunc("/logout", Logout(ctx)).Methods("POST")
+	s.HandleFunc("/logout", logout(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
 	// POST /api/v1/auth/forgot-password
-	s.HandleFunc("/forgot-password", ForgotPassword(ctx)).Methods("POST")
+	s.HandleFunc("/forgot-password", forgotPassword(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
 	// POST /api/v1/auth/recover-password
-	s.HandleFunc("/recover-password", RecoverPassword(ctx)).Methods("POST")
-
-	return s
+	s.HandleFunc("/recover-password", recoverPassword(ctx)).Methods(h.MethodPost, h.MethodOptions)
 }

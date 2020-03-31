@@ -11,8 +11,7 @@ import (
 	"github.com/microapis/users-api"
 )
 
-// GetByToken GET /api/v1/auth/token/:id handler controller
-func GetByToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func getByToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get token param
 		vars := mux.Vars(r)
@@ -40,6 +39,7 @@ func GetByToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request)
 
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][GetByToken][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][GetByToken][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -48,8 +48,7 @@ func GetByToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-// Login POST /api/v1/auth/login handler controller
-func Login(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func login(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -84,15 +83,31 @@ func Login(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// login with email and password on users-api
-		res, err := ctx.AuthClient.Login(payload.Email, payload.Password)
+		resLogin, err := ctx.AuthClient.Login(payload.Email, payload.Password)
 		if err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][Login][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// TODO(ca): fix bug #1 - fix error calling MarshalJSON for
+		//           type time.Time: Time.MarshalJSON: year outside
+		//           of range [0,9999] when call signup or login auth
+		//					 method (created_at and updated_at).
+		user := users.User{
+			ID:    resLogin.Data.ID,
+			Name:  resLogin.Data.Name,
+			Email: resLogin.Data.Email,
+		}
+
+		res := Response{
+			Data: user,
+			Meta: resLogin.Meta,
+		}
+
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][Login][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][Login][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,8 +116,7 @@ func Login(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Signup POST /api/v1/auth/signup handler controller
-func Signup(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func signup(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -154,15 +168,31 @@ func Signup(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// signup created user
-		res, err := ctx.AuthClient.Signup(user)
+		resSignup, err := ctx.AuthClient.Signup(user)
 		if err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][Signup][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		// TODO(ca): fix bug #2 - fix error calling MarshalJSON for
+		//           type time.Time: Time.MarshalJSON: year outside
+		//           of range [0,9999] when call signup or login auth
+		//					 method (created_at and updated_at).
+		u := users.User{
+			ID:    resSignup.Data.ID,
+			Name:  resSignup.Data.Name,
+			Email: resSignup.Data.Email,
+		}
+
+		res := Response{
+			Data: u,
+			Meta: resSignup.Meta,
+		}
+
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][Signup][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][Signup][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -171,8 +201,7 @@ func Signup(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// VerifyToken POST /api/v1/verify-token handler controller
-func VerifyToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func verifyToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -219,6 +248,7 @@ func VerifyToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request
 
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][VerifyToken][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][VerifyToken][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -227,8 +257,7 @@ func VerifyToken(ctx handlerContext) func(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// VerifyEmail POST /api/v1/auth/verify-email handler controller
-func VerifyEmail(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func verifyEmail(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -272,6 +301,7 @@ func VerifyEmail(ctx handlerContext) func(w http.ResponseWriter, r *http.Request
 
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][VerifyEmail][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][VerifyEmail][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -280,8 +310,7 @@ func VerifyEmail(ctx handlerContext) func(w http.ResponseWriter, r *http.Request
 	}
 }
 
-// Logout POST /api/v1/auth/logout handler controller
-func Logout(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func logout(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -325,6 +354,7 @@ func Logout(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][Logout][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][Logout][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -333,8 +363,7 @@ func Logout(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// ForgotPassword POST /api/v1/auth/forgot-password handler controller
-func ForgotPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func forgotPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -382,6 +411,7 @@ func ForgotPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Requ
 
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][ForgotPassword][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][ForgotPassword][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -390,8 +420,7 @@ func ForgotPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-// RecoverPassword POST /api/v1/auth/recover-password handler controller
-func RecoverPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
+func recoverPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// define payload struct
 		payload := new(struct {
@@ -436,6 +465,7 @@ func RecoverPassword(ctx handlerContext) func(w http.ResponseWriter, r *http.Req
 
 		fmt.Println(fmt.Sprintf("[Gateway][Auth][RecoverPassword][Response] %v", res))
 
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(res); err != nil {
 			fmt.Println(fmt.Sprintf("[Gateway][Auth][RecoverPassword][Error] %v", err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)

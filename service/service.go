@@ -81,7 +81,7 @@ func (as *Auth) Login(email, password string) (*auth.Response, error) {
 		UserID: user.ID,
 		StandardClaims: &jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(8760 * time.Hour).UnixNano(), // one year of expiration
+			ExpiresAt: time.Now().Add(8760 * time.Hour).Unix(), // one year of expiration
 		},
 	}
 
@@ -149,7 +149,7 @@ func (as *Auth) Signup(u *users.User) (*auth.Response, error) {
 		UserID: user.ID,
 		StandardClaims: &jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(8760 * time.Hour).UnixNano(), // one year of expiration
+			ExpiresAt: time.Now().Add(4320 * time.Hour).Unix(), // six months of expiration
 		},
 	}
 
@@ -185,7 +185,7 @@ func (as *Auth) Signup(u *users.User) (*auth.Response, error) {
 		UserID: user.ID,
 		StandardClaims: &jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(8760 * time.Hour).UnixNano(), // one year of expiration
+			ExpiresAt: time.Now().Add(2160 * time.Hour).Unix(), // 3 months of expiration
 		},
 	}
 
@@ -426,7 +426,7 @@ func (as *Auth) ForgotPassword(e string) (string, error) {
 		UserID: user.ID,
 		StandardClaims: &jwt.StandardClaims{
 			IssuedAt:  time.Now().Unix(),
-			ExpiresAt: time.Now().Add(5 * time.Minute).UnixNano(), // five minutes of expiration
+			ExpiresAt: time.Now().Add(2 * time.Hour).Unix(), // 2 hours of expiration
 		},
 	}
 
