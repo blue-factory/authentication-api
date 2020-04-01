@@ -34,8 +34,8 @@ func Routes(r *mux.Router, ac *ac.Client) {
 	// POST /api/v1/auth
 	s.HandleFunc("/signup", signup(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
-	// POST /api/v1/verify-token
-	s.HandleFunc("/verify-token", verifyToken(ctx)).Methods(h.MethodPost, h.MethodOptions)
+	// POST /api/v1/verify-email
+	s.HandleFunc("/verify-email", verifyEmail(ctx)).Methods(h.MethodPost, h.MethodOptions)
 
 	// POST /api/v1/auth/logout
 	s.HandleFunc("/logout", logout(ctx)).Methods(h.MethodPost, h.MethodOptions)
