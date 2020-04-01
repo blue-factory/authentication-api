@@ -95,9 +95,10 @@ func login(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 		//           of range [0,9999] when call signup or login auth
 		//					 method (created_at and updated_at).
 		user := users.User{
-			ID:    resLogin.Data.ID,
-			Name:  resLogin.Data.Name,
-			Email: resLogin.Data.Email,
+			ID:       resLogin.Data.ID,
+			Name:     resLogin.Data.Name,
+			Email:    resLogin.Data.Email,
+			Verified: resLogin.Data.Verified,
 		}
 
 		res := Response{
@@ -180,9 +181,10 @@ func signup(ctx handlerContext) func(w http.ResponseWriter, r *http.Request) {
 		//           of range [0,9999] when call signup or login auth
 		//					 method (created_at and updated_at).
 		u := users.User{
-			ID:    resSignup.Data.ID,
-			Name:  resSignup.Data.Name,
-			Email: resSignup.Data.Email,
+			ID:       resSignup.Data.ID,
+			Name:     resSignup.Data.Name,
+			Email:    resSignup.Data.Email,
+			Verified: resSignup.Data.Verified,
 		}
 
 		res := Response{

@@ -8,8 +8,8 @@
 #
 # Internal variables
 #
-VERSION=0.0.3
-LAST_VERSION=0.0.2
+VERSION=0.0.4
+LAST_VERSION=0.0.3
 NAME=auth
 SVC=$(NAME)-api
 BIN_PATH=$(PWD)/bin
