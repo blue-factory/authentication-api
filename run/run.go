@@ -6,12 +6,12 @@ import (
 	"net"
 
 	_ "github.com/lib/pq"
-	"github.com/microapis/auth-api/database"
-	pb "github.com/microapis/auth-api/proto"
-	"github.com/microapis/auth-api/rpc"
+	"github.com/microapis/authentication-api/database"
+	pb "github.com/microapis/authentication-api/proto"
+	"github.com/microapis/authentication-api/rpc"
 
 	"github.com/microapis/email-api"
-	u "github.com/microapis/users-api/client"
+	usersclient "github.com/microapis/users-api/client"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -24,7 +24,7 @@ func Run(address string, postgresDSN string, usersAddress string, mailingTmpl *e
 		log.Fatalf("Failed connect to postgres: %v", err)
 	}
 
-	uc, err := u.New(usersAddress)
+	uc, err := usersclient.New(usersAddress)
 	if err != nil {
 		log.Fatalf(err.Error())
 	}

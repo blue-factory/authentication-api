@@ -6,13 +6,13 @@ import (
 
 	"github.com/microapis/users-api"
 
-	"github.com/microapis/auth-api"
-	"github.com/microapis/auth-api/database"
-	pb "github.com/microapis/auth-api/proto"
-	"github.com/microapis/auth-api/service"
+	auth "github.com/microapis/authentication-api"
+	"github.com/microapis/authentication-api/database"
+	pb "github.com/microapis/authentication-api/proto"
+	"github.com/microapis/authentication-api/service"
 
 	"github.com/microapis/email-api"
-	u "github.com/microapis/users-api/client"
+	userclient "github.com/microapis/users-api/client"
 )
 
 var _ pb.AuthServiceServer = (*Service)(nil)
@@ -23,7 +23,7 @@ type Service struct {
 }
 
 // New ...
-func New(store database.Store, uc *u.Client, mt *email.MailingTemplates) *Service {
+func New(store database.Store, uc *userclient.Client, mt *email.MailingTemplates) *Service {
 	return &Service{
 		AuthSvc: service.NewAuth(store, uc, mt),
 	}

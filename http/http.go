@@ -5,7 +5,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	ac "github.com/microapis/auth-api/client"
+	authclient "github.com/microapis/authentication-api/client"
 )
 
 // Response ...
@@ -20,7 +20,7 @@ type handlerContext struct {
 }
 
 // Routes ...
-func Routes(r *mux.Router, ac *ac.Client) {
+func Routes(r *mux.Router, ac *authclient.Client) {
 	s := r.PathPrefix("/api/v1/auth").Subrouter()
 
 	// define context

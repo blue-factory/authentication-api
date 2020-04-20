@@ -2,8 +2,8 @@ package database
 
 import (
 	"github.com/jmoiron/sqlx"
-	auth "github.com/microapis/auth-api"
-	"github.com/microapis/auth-api/database/postgres"
+	auth "github.com/microapis/authentication-api"
+	"github.com/microapis/authentication-api/database/postgres"
 )
 
 // Store ...

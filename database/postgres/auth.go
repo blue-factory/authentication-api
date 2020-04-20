@@ -7,7 +7,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
-	"github.com/microapis/auth-api"
+	"github.com/microapis/authentication-api"
 )
 
 // AuthStore ...

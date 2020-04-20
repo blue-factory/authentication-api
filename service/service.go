@@ -7,11 +7,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/microapis/auth-api"
-	"github.com/microapis/auth-api/database"
+	auth "github.com/microapis/authentication-api"
+	"github.com/microapis/authentication-api/database"
 
 	"github.com/microapis/users-api"
-	uc "github.com/microapis/users-api/client"
+	usersclient "github.com/microapis/users-api/client"
 
 	"github.com/microapis/email-api"
 
@@ -19,10 +19,10 @@ import (
 )
 
 // NewAuth ...
-func NewAuth(store database.Store, usersClient *uc.Client, mt *email.MailingTemplates) *Auth {
+func NewAuth(store database.Store, uc *usersclient.Client, mt *email.MailingTemplates) *Auth {
 	return &Auth{
 		Store:            store,
-		UsersClient:      usersClient,
+		UsersClient:      uc,
 		MailingTemplates: mt,
 	}
 }
@@ -30,7 +30,7 @@ func NewAuth(store database.Store, usersClient *uc.Client, mt *email.MailingTemp
 // Auth ...
 type Auth struct {
 	Store            database.Store
-	UsersClient      *uc.Client
+	UsersClient      *usersclient.Client
 	MailingTemplates *email.MailingTemplates
 }
 

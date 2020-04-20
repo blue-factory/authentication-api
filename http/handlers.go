@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	"github.com/microapis/auth-api"
+	"github.com/microapis/authentication-api"
 	"github.com/microapis/users-api"
 )
 
