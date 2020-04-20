@@ -1,11 +1,11 @@
-package client
+package authclient
 
 import (
 	"context"
 	"errors"
 
-	"github.com/microapis/auth-api"
-	pb "github.com/microapis/auth-api/proto"
+	auth "github.com/microapis/authentication-api"
+	pb "github.com/microapis/authentication-api/proto"
 	users "github.com/microapis/users-api"
 	"google.golang.org/grpc"
 )

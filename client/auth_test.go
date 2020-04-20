@@ -1,4 +1,4 @@
-package client
+package authclient_test
 
 import (
 	"fmt"
@@ -7,8 +7,9 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/microapis/auth-api"
-	authClient "github.com/microapis/auth-api/client"
+
+	auth "github.com/microapis/authentication-api"
+	authclient "github.com/microapis/authentication-api/client"
 	users "github.com/microapis/users-api"
 )
 
@@ -35,7 +36,7 @@ func TestGetByToken(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -49,24 +50,24 @@ func TestGetByToken(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	newUser, err := as.Signup(user)
+	newUser, err := client.Signup(user)
 	if err != nil {
-		t.Errorf("TestGetByToken: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestGetByToken: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
 	token := newUser.Meta.Token
 
 	// Test invalid token
-	_, err = as.GetByToken(token)
+	_, err = client.GetByToken(token)
 	if err != nil && err.Error() != "invalid token" {
-		t.Errorf("TestGetByToken: as.GetByToken() failed: %s", err.Error())
+		t.Errorf("TestGetByToken: client.GetByToken() failed: %s", err.Error())
 	}
 
 	// Test valid token
-	a, err := as.GetByToken(token)
+	a, err := client.GetByToken(token)
 	if err != nil {
-		t.Errorf("TestGetByToken: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestGetByToken: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
@@ -108,40 +109,40 @@ func TestSignup(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	// Test sign up user with nil value
-	_, err = as.Signup(nil)
+	_, err = client.Signup(nil)
 	if err != nil && err.Error() != "invalid user" {
-		t.Errorf("TestSignup: as.Signup() failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup() failed: %s", err.Error())
 	}
 	if err == nil {
-		t.Errorf("TestSignup: as.Signup() failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup() failed: %s", err.Error())
 	}
 
 	// Test sign up user with empty values
 	user := &users.User{}
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil && err.Error() != "invalid user params" {
-		t.Errorf("TestSignup: as.Signup() failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup() failed: %s", err.Error())
 	}
 	if err == nil {
-		t.Errorf("TestSignup: as.Signup() failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup() failed: %s", err.Error())
 	}
 
 	// Test create with invalid name new user
 	user = &users.User{
 		Name: "",
 	}
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil && err.Error() != "invalid user params" {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 	}
 	if err == nil {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 	}
 
 	// Test create invalid email new user
@@ -149,12 +150,12 @@ func TestSignup(t *testing.T) {
 		Name:  "fake_user",
 		Email: "",
 	}
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil && err.Error() != "invalid user params" {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 	}
 	if err == nil {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 	}
 
 	randomUUID := uuid.New()
@@ -165,12 +166,12 @@ func TestSignup(t *testing.T) {
 		Email:    "fake_email_" + randomUUID.String(),
 		Password: "",
 	}
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil && err.Error() != "invalid user params" {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 	}
 	if err == nil {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 	}
 
 	// Test create valid new user
@@ -180,9 +181,9 @@ func TestSignup(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	a, err := as.Signup(user)
+	a, err := client.Signup(user)
 	if err != nil {
-		t.Errorf("TestSignup: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestSignup: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
@@ -229,9 +230,9 @@ func TestSignup(t *testing.T) {
 	}
 
 	// Verify if blacklist is false
-	aa, err := as.GetByToken(a.Meta.Token)
+	aa, err := client.GetByToken(a.Meta.Token)
 	if err != nil {
-		t.Errorf("TestGetByToken: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestGetByToken: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
@@ -255,7 +256,7 @@ func TestLogin(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -269,16 +270,16 @@ func TestLogin(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil {
-		t.Errorf("TestLogin: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestLogin: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
 	// Test login user
-	a, err := as.Login(user.Email, user.Password)
+	a, err := client.Login(user.Email, user.Password)
 	if err != nil {
-		t.Errorf("TestLogin: as.Login(user) failed: %s", err.Error())
+		t.Errorf("TestLogin: client.Login(user) failed: %s", err.Error())
 		return
 	}
 
@@ -325,9 +326,9 @@ func TestLogin(t *testing.T) {
 	}
 
 	// Verify if blacklist is false
-	aa, err := as.GetByToken(a.Meta.Token)
+	aa, err := client.GetByToken(a.Meta.Token)
 	if err != nil {
-		t.Errorf("TestLogin: as.GetByToken(user) failed: %s", err.Error())
+		t.Errorf("TestLogin: client.GetByToken(user) failed: %s", err.Error())
 		return
 	}
 
@@ -351,7 +352,7 @@ func TestVerifyToken(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -365,15 +366,15 @@ func TestVerifyToken(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	newUser, err := as.Signup(user)
+	newUser, err := client.Signup(user)
 	if err != nil {
-		t.Errorf("TestVerifyToken: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestVerifyToken: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
-	tt, err := as.VerifyToken(newUser.Meta.Token, auth.KindUser)
+	tt, err := client.VerifyToken(newUser.Meta.Token, auth.KindUser)
 	if err != nil {
-		t.Errorf("TestVerifyToken: as.VerifyToken(user) failed: %s", err.Error())
+		t.Errorf("TestVerifyToken: client.VerifyToken(user) failed: %s", err.Error())
 	}
 
 	expected := tt.UserID
@@ -402,7 +403,7 @@ func TestVerifyEmail(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -416,18 +417,18 @@ func TestVerifyEmail(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	newUser, err := as.Signup(user)
+	newUser, err := client.Signup(user)
 	if err != nil {
-		t.Errorf("TestVerifyEmail: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestVerifyEmail: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
 	vt := newUser.Meta.VerificationToken
 
 	// Test valid token
-	a, err := as.GetByToken(vt)
+	a, err := client.GetByToken(vt)
 	if err != nil {
-		t.Errorf("TestVerifyEmail: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestVerifyEmail: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
@@ -456,16 +457,16 @@ func TestVerifyEmail(t *testing.T) {
 	}
 
 	// Verify email
-	err = as.VerifyEmail(vt)
+	err = client.VerifyEmail(vt)
 	if err != nil {
-		t.Errorf("TestVerifyEmail: as.VerifyEmail(user) failed: %s", err.Error())
+		t.Errorf("TestVerifyEmail: client.VerifyEmail(user) failed: %s", err.Error())
 		return
 	}
 
 	// Login user
-	aa, err := as.Login(user.Email, user.Password)
+	aa, err := client.Login(user.Email, user.Password)
 	if err != nil {
-		t.Errorf("TestVerifyEmail: as.Login(user) failed: %s", err.Error())
+		t.Errorf("TestVerifyEmail: client.Login(user) failed: %s", err.Error())
 		return
 	}
 
@@ -519,7 +520,7 @@ func TestLogout(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -533,42 +534,42 @@ func TestLogout(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil {
-		t.Errorf("TestLogout: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
 	// Login user
-	a, err := as.Login(user.Email, user.Password)
+	a, err := client.Login(user.Email, user.Password)
 	if err != nil {
-		t.Errorf("TestLogout: as.Login(user) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.Login(user) failed: %s", err.Error())
 		return
 	}
 
 	// Test invalid token
-	err = as.Logout("")
+	err = client.Logout("")
 	if err != nil && err.Error() != "invalid token" {
-		t.Errorf("TestLogout: as.Logout() failed: %s", err.Error())
+		t.Errorf("TestLogout: client.Logout() failed: %s", err.Error())
 	}
 
 	// Test logout user
-	err = as.Logout(a.Meta.Token)
+	err = client.Logout(a.Meta.Token)
 	if err != nil {
-		t.Errorf("TestLogout: as.Logout(token) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.Logout(token) failed: %s", err.Error())
 		return
 	}
 
 	// Verify Token
-	_, err = as.VerifyToken(a.Meta.Token, auth.KindUser)
+	_, err = client.VerifyToken(a.Meta.Token, auth.KindUser)
 	if err != nil && err.Error() != "token is blacklisted" {
-		t.Errorf("TestLogout: as.VerifyToken(token, kind) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.VerifyToken(token, kind) failed: %s", err.Error())
 	}
 
 	// Verify if blacklist is true
-	aa, err := as.GetByToken(a.Meta.Token)
+	aa, err := client.GetByToken(a.Meta.Token)
 	if err != nil {
-		t.Errorf("TestLogout: as.GetByToken(user) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.GetByToken(user) failed: %s", err.Error())
 		return
 	}
 
@@ -592,7 +593,7 @@ func TestForgotPassword(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -606,27 +607,27 @@ func TestForgotPassword(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil {
-		t.Errorf("TestLogout: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
-	_, err = as.ForgotPassword("")
+	_, err = client.ForgotPassword("")
 	if err != nil && err.Error() != "invalid email" {
-		t.Errorf("TestForgotPassword: as.ForgotPassword(token, kind) failed: %s", err.Error())
+		t.Errorf("TestForgotPassword: client.ForgotPassword(token, kind) failed: %s", err.Error())
 	}
 
-	token, err := as.ForgotPassword(user.Email)
+	token, err := client.ForgotPassword(user.Email)
 	if err != nil {
-		t.Errorf("TestForgotPassword: as.ForgotPassword(user) failed: %s", err.Error())
+		t.Errorf("TestForgotPassword: client.ForgotPassword(user) failed: %s", err.Error())
 		return
 	}
 
 	// Verify if blacklist is false
-	aa, err := as.GetByToken(token)
+	aa, err := client.GetByToken(token)
 	if err != nil {
-		t.Errorf("TestForgotPassword: as.GetByToken(user) failed: %s", err.Error())
+		t.Errorf("TestForgotPassword: client.GetByToken(user) failed: %s", err.Error())
 		return
 	}
 
@@ -652,7 +653,7 @@ func TestRecoverPasssword(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	as, err := authClient.New(host + ":" + port)
+	client, err := authclient.New(host + ":" + port)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -666,39 +667,39 @@ func TestRecoverPasssword(t *testing.T) {
 		Name:     "fake_name",
 	}
 
-	_, err = as.Signup(user)
+	_, err = client.Signup(user)
 	if err != nil {
-		t.Errorf("TestLogout: as.Signup(user) failed: %s", err.Error())
+		t.Errorf("TestLogout: client.Signup(user) failed: %s", err.Error())
 		return
 	}
 
-	token, err := as.ForgotPassword(user.Email)
+	token, err := client.ForgotPassword(user.Email)
 	if err != nil {
-		t.Errorf("TestRecoverPasssword: as.ForgotPassword(user) failed: %s", err.Error())
+		t.Errorf("TestRecoverPasssword: client.ForgotPassword(user) failed: %s", err.Error())
 		return
 	}
 
 	newPassword := "new_fake_password"
 
-	err = as.RecoverPassword(newPassword, token)
+	err = client.RecoverPassword(newPassword, token)
 	if err != nil {
-		t.Errorf("TestRecoverPasssword: as.RecoverPassword(newPassword, token) failed: %s", err.Error())
+		t.Errorf("TestRecoverPasssword: client.RecoverPassword(newPassword, token) failed: %s", err.Error())
 		return
 	}
 
 	// TODO(ca): check if user is activated
 
 	// Login user with invalid password
-	_, err = as.Login(user.Email, "invalid_new_fake_password")
+	_, err = client.Login(user.Email, "invalid_new_fake_password")
 	if err != nil && err.Error() != "invalid password" {
-		t.Errorf("TestRecoverPasssword: as.Login(user) failed: %s", err.Error())
+		t.Errorf("TestRecoverPasssword: client.Login(user) failed: %s", err.Error())
 		return
 	}
 
 	// Login user with valid password
-	_, err = as.Login(user.Email, newPassword)
+	_, err = client.Login(user.Email, newPassword)
 	if err != nil {
-		t.Errorf("TestRecoverPasssword: as.Login(user) failed: %s", err.Error())
+		t.Errorf("TestRecoverPasssword: client.Login(user) failed: %s", err.Error())
 		return
 	}
 }
