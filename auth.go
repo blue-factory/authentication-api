@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	pb "github.com/microapis/auth-api/proto"
+	pb "github.com/microapis/authentication-api/proto"
 	users "github.com/microapis/users-api"
 )
 
