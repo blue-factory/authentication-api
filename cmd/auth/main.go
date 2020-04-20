@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	auth "github.com/microapis/auth-api/run"
-	"github.com/microapis/auth-api/template"
+	auth "github.com/microapis/authentication-api/run"
+	"github.com/microapis/authentication-api/template"
 
 	"github.com/microapis/email-api"
 
