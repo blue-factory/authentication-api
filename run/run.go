@@ -5,12 +5,13 @@ import (
 	"log"
 	"net"
 
+	// Used by psql driver
 	_ "github.com/lib/pq"
+	auth "github.com/microapis/authentication-api"
 	"github.com/microapis/authentication-api/database"
 	pb "github.com/microapis/authentication-api/proto"
 	"github.com/microapis/authentication-api/rpc"
 
-	"github.com/microapis/email-api"
 	usersclient "github.com/microapis/users-api/client"
 
 	"google.golang.org/grpc"
@@ -18,7 +19,7 @@ import (
 )
 
 // Run ...
-func Run(address string, postgresDSN string, usersAddress string, mailingTmpl *email.MailingTemplates) {
+func Run(address string, postgresDSN string, usersAddress string, mailingTmpl *auth.MailingTemplates) {
 	pgSvc, err := database.NewPostgres(postgresDSN)
 	if err != nil {
 		log.Fatalf("Failed connect to postgres: %v", err)

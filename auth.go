@@ -117,3 +117,11 @@ type Query struct {
 	Email  string
 	UserID string
 }
+
+// MailingTemplates ...
+type MailingTemplates struct {
+	Signup          func(u *users.User) error
+	VerifyEmail     func(u *users.User, token string) error
+	ForgotPassword  func(u *users.User, token string) error
+	PasswordChanged func(u *users.User) error
+}

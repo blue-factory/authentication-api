@@ -8,8 +8,6 @@ import (
 	auth "github.com/microapis/authentication-api/run"
 	"github.com/microapis/authentication-api/template"
 
-	"github.com/microapis/email-api"
-
 	emailClient "github.com/microapis/email-api/client"
 )
 
@@ -64,7 +62,7 @@ func main() {
 		log.Fatal("Env variable PORT must be defined")
 	}
 	addr := fmt.Sprintf("%s:%s", host, port)
-	auth.Run(addr, postgresDSN, usersAddr, &email.MailingTemplates{
+	auth.Run(addr, postgresDSN, usersAddr, &auth.MailingTemplates{
 		Signup:          template.SignupTemplate(ec),
 		VerifyEmail:     template.VerifyEmailTemplate(ec),
 		ForgotPassword:  template.ForgotPasswordTemplate(ec),

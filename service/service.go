@@ -13,13 +13,11 @@ import (
 	"github.com/microapis/users-api"
 	usersclient "github.com/microapis/users-api/client"
 
-	"github.com/microapis/email-api"
-
 	"github.com/dgrijalva/jwt-go"
 )
 
 // NewAuth ...
-func NewAuth(store database.Store, uc *usersclient.Client, mt *email.MailingTemplates) *Auth {
+func NewAuth(store database.Store, uc *usersclient.Client, mt *auth.MailingTemplates) *Auth {
 	return &Auth{
 		Store:            store,
 		UsersClient:      uc,
@@ -31,7 +29,7 @@ func NewAuth(store database.Store, uc *usersclient.Client, mt *email.MailingTemp
 type Auth struct {
 	Store            database.Store
 	UsersClient      *usersclient.Client
-	MailingTemplates *email.MailingTemplates
+	MailingTemplates *auth.MailingTemplates
 }
 
 // GetByToken ...

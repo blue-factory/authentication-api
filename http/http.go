@@ -16,7 +16,7 @@ type Response struct {
 }
 
 type handlerContext struct {
-	AuthClient *ac.Client
+	AuthClient *authclient.Client
 }
 
 // Routes ...
@@ -45,4 +45,6 @@ func Routes(r *mux.Router, ac *authclient.Client) {
 
 	// POST /api/v1/auth/recover-password
 	s.HandleFunc("/recover-password", recoverPassword(ctx)).Methods(h.MethodPost, h.MethodOptions)
+
+	// TODO: implement endpoint POST /api/v1/auth/resend-verification-email
 }
